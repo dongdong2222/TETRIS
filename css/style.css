@@ -1,5 +1,6 @@
 #myCanvas {
     background-color: beige;
+    display: block;
     width: 500px;
     height: 800px;
 }
