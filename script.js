@@ -9,7 +9,10 @@ function create2DArray(width, height) {
     var arr = new Array(height);
     for(var i=0; i<height; i++){
         arr[i] = new Array(width).fill(0);
+        if(i == (height-1))
+            arr[i].fill(1);
     }
+    
     return arr;
 }
 
@@ -26,6 +29,7 @@ class Block1 {  //class field를 다른 메서드가 사용할때 this를 꼭 �
     currentTurn = 0;
     x = 3;
     y = 0;
+    interval;
 
     leftPosition() {
         var minimum = 100;
@@ -44,6 +48,14 @@ class Block1 {  //class field를 다른 메서드가 사용할때 this를 꼭 �
         }
         return maximum + this.x;
     }
+//     underPosition() {
+//         var under = 0;
+//         for(var i=0; i<4; i++){
+//             if(under < this.shape[this.currentTurn][i][1])
+//                 under = this.shape[this.currentTurn][i][1];
+//         }
+//         return under + this.y;
+//     }
     
     //var currentShape = shape[currentTurn];
     rotation () {  // 벽에 붙어있을때 회전시 블록이 밖으로 나감
@@ -55,15 +67,18 @@ class Block1 {  //class field를 다른 메서드가 사용할때 this를 꼭 �
     filledBlock(){
         var fillArea = new Array(4);
         for(let i=0; i<4; i++){
-            fillArea = new Array(2);
+            fillArea[i] = new Array(2);
             for(let j=0; j<2; j++){
-                fillArea[i][j] = y+shape[currentTurn][i][j];
+                if(j === 0)
+                    fillArea[i][j] = this.x+this.shape[this.currentTurn][i][j];
+                else if(j === 1)
+                    fillArea[i][j] = this.y+this.shape[this.currentTurn][i][j];
             }
         }
         return fillArea;
 
     }
-    drawBlock(){ //필드에 대한 좌표값을 받고 draw
+    drawBlock(){
         for(var i=0; i<4; i++){
 //             console.log(this.x+this.shape[this.currentTurn][i][0]);
 //             console.log(this.y+this.shape[this.currentTurn][i][1]);
@@ -80,23 +95,26 @@ class Block1 {  //class field를 다른 메서드가 사용할때 this를 꼭 �
     }
     falling () {
         //console.log(this);
-        setInterval(() => {this.y++;}, 1000);
+        this.interval = setInterval(() => {this.y++;}, 1000);
         
     }
+    landing () {
+        clearInterval(this.interval);
+    }
 
-    moveBlock(control){ //0 : 가만히 -1: 왼쪽 1: 오른쪽
+    moveBlock(control){ //0 : 가만히 -1: 왼쪽 1: 오른쪽 2: 아래쪽
         if(control === -1 ){
             if(this.leftPosition() == 0)
                 return;
             this.x--;
-            console.log(block.x);
+            console.log(gameField.currentBlock.x);
 
         }
         else if(control === 1){
-            if(this.rightPosition() == 9) //블록 크기도 생각해줘야함
+            if(this.rightPosition() == 9) //블록 크기도 생각해줘야함(or index값으로 계산하므로)
                 return;
             this.x++;
-            console.log(block.x);
+            console.log(gameField.currentBlock.x);
         }
         else if(control === 2){
             this.y++;
@@ -117,7 +135,8 @@ class Field {
     constructor(width, height){
         this.width = width;
         this.height = height;
-        this.field = create2DArray(this.width, this.height);
+        this.field = create2DArray(this.width, this.height+1);
+        this.currentBlock = new Block1();
 
         
     }
@@ -125,7 +144,7 @@ class Field {
 
     createBlock(){
         var rand = Math.floor(Math.random()*10);
-        currentBlock = new randomBlock();
+        this.currentBlock = new Block1();
         
     }
     DeleteLine(){
@@ -147,6 +166,34 @@ class Field {
             cheak = 0;
         }
     }
+
+    colision () {   //옆에서 부딪혔을때 오류
+        console.log("if");
+        var iscol = false;
+        var filledArea = this.currentBlock.filledBlock();
+        for(var i=0; i<4; i++){
+            if(this.field[filledArea[i][1]][filledArea[i][0]] === 1)
+                return iscol = true;
+        }
+    }
+
+    landBlock() {
+        console.log("landBlock");
+        if(this.colision()){
+            console.log("coll");
+            this.currentBlock.y--;
+            var filledArea = this.currentBlock.filledBlock();
+
+            for(var i=0; i<4; i++){
+                this.field[filledArea[i][1]][filledArea[i][0]] = 1;
+            }
+            this.currentBlock.landing();
+
+            this.createBlock();
+        }
+
+    }
+
     drawField() {
         ctx.beginPath();
         ctx.rect(0,0, this.width*px, this.height*px);
@@ -155,11 +202,11 @@ class Field {
         ctx.closePath();
         for(var i=0; i<this.height; i++){
             for(var j=0; j<this.width; j++){
-                if(this.field[i][j] === 0 ){
+                if(this.field[i][j] === 1 ){
                     ctx.beginPath();
                     ctx.rect(j*px, i*px, px, px);
-                    //ctx.fillStyle = "black";
-                    //ctx.fill();
+//                     ctx.fillStyle = "black";
+//                     ctx.fill();
                     ctx.strokeStyle = "black";
                     ctx.stroke();
                     ctx.closePath();
@@ -170,21 +217,7 @@ class Field {
 }
 
 
-
-
-function collisionDetection() { //충돌시 ture 아닐 시 false
-   var fillArea =  field.currentTurn.filledArea();
-   for(var i=0; i<4; i++){
-        if(fillArea[i][0] === 1 || fillArea[i][1] === 1){
-            return true;
-        }
-      }
-   }
-
-
 var gameField = new Field(10, 20);
-var block = new Block1();
-
 
 
 var control = 0;
@@ -192,14 +225,16 @@ var turn = false;
 
 function draw () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    gameField.landBlock();
     gameField.drawField();
-    block.drawBlock();
+    gameField.currentBlock.drawBlock();
 
-    block.moveBlock(control);
+    gameField.currentBlock.moveBlock(control);
     if(turn){
-        block.rotation();
+        gameField.currentBlock.rotation();
         turn = false;
     }
+    control = 0;
 
     requestAnimationFrame(draw);
 }
@@ -209,8 +244,6 @@ function draw () {
 
 document.addEventListener("keydown", keydownHandler); //false??
 document.addEventListener("keyup", keyupHandler);
-document.addEventListener("blocking", blockingHandler);
-
 function keydownHandler(e){
     if(e.keyCode === 37){ //완쪽 방향키
         control = -1;
@@ -237,7 +270,5 @@ function keyupHandler(e){
     }
 
 }
-function blockingHandler(e) {
 
-}
 draw();
