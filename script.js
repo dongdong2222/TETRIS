@@ -48,21 +48,37 @@ class Block1 {  //class field를 다른 메서드가 사용할때 this를 꼭 �
         }
         return maximum + this.x;
     }
-//     underPosition() {
-//         var under = 0;
-//         for(var i=0; i<4; i++){
-//             if(under < this.shape[this.currentTurn][i][1])
-//                 under = this.shape[this.currentTurn][i][1];
-//         }
-//         return under + this.y;
-//     }
+    underPosition() {
+        var under = 0;
+        for(var i=0; i<4; i++){
+            if(under < this.shape[this.currentTurn][i][1])
+                under = this.shape[this.currentTurn][i][1];
+        }
+        return under + this.y;
+    }
     
     //var currentShape = shape[currentTurn];
     rotation () {  // 벽에 붙어있을때 회전시 블록이 밖으로 나감
+        var filled = this.filledBlock();
         if(this.currentTurn === 1)
             this.currentTurn = 0;
         else
-            this.currentTurn++; 
+            this.currentTurn++;
+            
+        if(this.rightPosition()>9 ){
+            this.x -= this.rightPosition()-9;
+        }
+        else if(this.leftPosition()< 0){
+            this.x += this.leftPosition()*(-1);
+        }
+
+        if(this.underPosition() > 19){// height 바꾸면 바꾸기
+            this.y -= this.underPosition() - 19; 
+        }
+
+
+
+
     }
     filledBlock(){
         var fillArea = new Array(4);
@@ -125,7 +141,7 @@ class Block1 {  //class field를 다른 메서드가 사용할때 this를 꼭 �
    
 }
 
-function randomblock() {
+function randomBlock() {
     return new Block1();
 }
 
@@ -135,16 +151,14 @@ class Field {
     constructor(width, height){
         this.width = width;
         this.height = height;
-        this.field = create2DArray(this.width, this.height+1);
+        this.field = create2DArray(width, height+1);
         this.currentBlock = new Block1();
-
         
     }
-    
 
     createBlock(){
         var rand = Math.floor(Math.random()*10);
-        this.currentBlock = new Block1();
+        this.currentBlock = randomBlock();
         
     }
     DeleteLine(){
@@ -171,10 +185,11 @@ class Field {
         console.log("if");
         var iscol = false;
         var filledArea = this.currentBlock.filledBlock();
-        for(var i=0; i<4; i++){
+        for(var i=0; i<4; i++){ 
             if(this.field[filledArea[i][1]][filledArea[i][0]] === 1)
                 return iscol = true;
         }
+        return iscol;
     }
 
     landBlock() {
@@ -216,9 +231,22 @@ class Field {
     }
 }
 
+// class Controler {
+//     constructor (width, height) {
+//         fieldA = new Field(width, height);
+//     }
+//     draw () {
+//         this.fieldA.drawField();
+//         this.fieldA.currentBlock.drawBlock();
+//     }
+//     landing(){
+        
+//     }
+// }
+
 
 var gameField = new Field(10, 20);
-
+//var game = new Controler();
 
 var control = 0;
 var turn = false;
@@ -231,10 +259,16 @@ function draw () {
 
     gameField.currentBlock.moveBlock(control);
     if(turn){
-        gameField.currentBlock.rotation();
-        turn = false;
+        if(!gameField.colision()){
+            gameField.currentBlock.rotation();
+            while(gameField.colision())   // 문제 생길 수 있음
+                gameField.currentBlock.rotation();
+            turn = false;
+        }
+
     }
     control = 0;
+
 
     requestAnimationFrame(draw);
 }
