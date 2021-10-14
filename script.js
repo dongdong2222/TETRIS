@@ -4,7 +4,7 @@ var px = 40;
 
 function create2DArray(width, height) {
     var w = width+2;
-    var h = height+1;
+    var h = height+5;
     var arr = new Array(h);
     for(var i=0; i<h;i++){
         arr[i] = new Array(w);
@@ -16,10 +16,14 @@ function create2DArray(width, height) {
                 arr[i][j] = 0;
             }
         }
-        if(i === height)
+        if(i === h-1)
             arr[i].fill(1);
     }
     return arr;
+}
+function randomBlock(rand){
+
+        return new Block();
 }
 
 class Block {
@@ -31,8 +35,8 @@ class Block {
              [[0,0],[1,0],[2,0],[3,0]]
     ];
     x = 4;
-    y = 0;
-    color = "black";
+    y = 1;
+    color = "blue";
     currentTurn = 0;
     interval;
 
@@ -48,7 +52,7 @@ class Block {
     drawBlock() {
         for(var i=0;i<4; i++){
             ctx.beginPath();
-            ctx.rect((this.x+this.shape[this.currentTurn][i][0])*px, (this.y+this.shape[this.currentTurn][i][1])*px, px, px);
+            ctx.rect((this.x+this.shape[this.currentTurn][i][0])*px, (this.y+this.shape[this.currentTurn][i][1]-4)*px, px, px);
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.closePath();
@@ -111,7 +115,7 @@ class Field {
         ctx.closePath();
         for(var i=0; i<this.height; i++){
             for(var j=1; j<this.width+1; j++){
-                if(this.field[i][j] == 1){
+                if(this.field[i+3][j] == 1){
                     ctx.beginPath();
                     ctx.rect(j*px, i*px, px, px);
                     ctx.fillStyle = this.color;
@@ -127,7 +131,13 @@ class Field {
 class Control {
     constructor(width, height) {
         this.fieldA = new Field(width, height);
-        this.currentBlock = new Block();
+        this.ran = [];
+        this.ran.push(Math.floor(Math.random()*6)+1);
+        this.ran.push(Math.floor(Math.random()*6)+1);
+        this.ran.push(Math.floor(Math.random()*6)+1);
+        this.ran.push(Math.floor(Math.random()*6)+1);
+        this.currentBlock = randomBlock(this.ran.shift());
+        this.ran.push(Math.floor(Math.random()*6)+1);
     }
 
     draw (){
@@ -135,7 +145,8 @@ class Control {
         this.currentBlock.drawBlock();
     }
     createBlock () {
-        this.currentBlock = new Block();
+        this.currentBlock = randomBlock(this.ran.shift());
+        this.ran.push(Math.floor(Math.random()*6)+1);
     }
 
     collision(){
@@ -165,13 +176,16 @@ class Control {
             var direct = key ===3?1:-1; 
             var count =0;
             this.currentBlock.rotation(direct);
+            console.log("rota");
             while(this.collision()) {
                 if(count == 2){
                     this.currentBlock.x  = pos.x;
                     this.currentBlock.y  = pos.y;
                     this.currentBlock.rotation(direct*(-1));
+                    count = 0;
                     break;
                 }
+                console.log("move back");
                 this.currentBlock.moveBlock(-1);
 
                 count++;
@@ -181,6 +195,7 @@ class Control {
                     this.currentBlock.x  = pos.x;
                     this.currentBlock.y  = pos.y;
                     this.currentBlock.rotation(direct*(-1));
+                    count = 0;
                     break;
                 }
                 this.currentBlock.moveBlock(1);
@@ -195,6 +210,7 @@ class Control {
                         this.currentBlock.x  = pos.x;
                         this.currentBlock.y  = pos.y;
                         this.currentBlock.rotation(direct*(-1));
+                        count = 0;
                         break;
 
                     }
@@ -223,8 +239,20 @@ class Control {
                 this.fieldA.field[filled[i][1]][filled[i][0]] = 1;
             }
             this.currentBlock.landing();
+            this.currentBlock.drawBlock();
             this.createBlock();
             this.cheakDelete();
+            this.checkGameOver();
+        }
+    }
+    checkGameOver () {
+        var line = this.fieldA.field[2];
+        for(var i = 1; i<11; i++){
+            if(line[i] === 1){
+                document.location.reload();
+                alert("GAME OVER");
+                
+            }
         }
     }
     cheakDelete() {
