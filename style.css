@@ -2,3 +2,11 @@
     background-color: #eee;
     display: block;
 }
+#start {
+    width: 60px;
+    height: 30px;
+}
+button[disable = "disable"]{
+    opacity: 0.5;
+    cursor: not-allowed;
+}

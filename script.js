@@ -1,10 +1,10 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-var px = 40;
+var px = 45;
 
 function create2DArray(width, height) {
     var w = width+2;
-    var h = height+5;
+    var h = height+3;
     var arr = new Array(h);
     for(var i=0; i<h;i++){
         arr[i] = new Array(w);
@@ -22,37 +22,46 @@ function create2DArray(width, height) {
     return arr;
 }
 function randomBlock(rand){
-
-        return new Block();
+        if(rand == 1)
+            return new Block1();
+        else if(rand == 2)
+            return new Block2();
+        else if(rand ==3)
+            return new Block3();
+        else if(rand == 4)
+            return new Block4();
+        else if(rand == 5)
+            return new Block5();
+        else if(rand == 6)
+            return new Block6();
+        else if(rand == 7)
+            return new Block7();
 }
 
 class Block {
     constructor () {
         this.falling();
     }
-    shape = [
-             [[0,0],[0,1],[0,2],[0,3]],
-             [[0,0],[1,0],[2,0],[3,0]]
-    ];
+    shape;
     x = 4;
-    y = 1;
+    y = 0;
     color = "blue";
     currentTurn = 0;
     interval;
 
     rotation (direct) {
-        if(this.currentTurn === 1 && direct == 1)
+        if(this.currentTurn === 3 && direct == 1)
             this.currentTurn = 0;
         else if(this.currentTurn === 0 && direct == -1)
-            this.currentTurn = 1;
+            this.currentTurn = 3;
         else
             this.currentTurn += direct;
     }
 
-    drawBlock() {
+    drawBlock(x, y) {
         for(var i=0;i<4; i++){
             ctx.beginPath();
-            ctx.rect((this.x+this.shape[this.currentTurn][i][0])*px, (this.y+this.shape[this.currentTurn][i][1]-4)*px, px, px);
+            ctx.rect((x+this.x+this.shape[this.currentTurn][i][0]-1)*px, (y+this.y+this.shape[this.currentTurn][i][1]-2)*px, px, px);
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.closePath();
@@ -88,34 +97,119 @@ class Block {
 
     }
 }
-
+class Block1 extends Block {
+    constructor () {
+        super();
+        this.shape = [
+                        [[0,1],[1,1],[2,1],[3,1]],
+                        [[2,0],[2,1],[2,2],[2,3]],
+                        [[0,2],[1,2],[2,2],[3,2]],
+                        [[1,0],[1,1],[1,2],[1,3]]
+        ];
+        this.color = "#0f9bd7";
+    }
+}
+class Block2 extends Block {
+    constructor () {
+        super();
+        this.shape = [
+                        [[0,1],[1,1],[2,1],[1,0]],       
+                        [[1,0],[1,1],[1,2],[2,1]],
+                        [[0,1],[1,1],[2,1],[1,2]],
+                        [[1,0],[1,1],[1,2],[0,1]]
+                        
+        ];
+        this.color = "#af298a"
+    }
+}
+class Block3 extends Block {
+    constructor () {
+        super();
+        this.shape = [
+                        [[0,1],[1,0],[1,1],[2,0]],
+                        [[0,0],[0,1],[1,1],[1,2]],
+                        [[0,1],[1,0],[1,1],[2,0]],
+                        [[1,0],[1,1],[2,1],[2,2]]
+                        
+        ];
+        this.color = "#59b101";
+    }
+}
+class Block4 extends Block {
+    constructor () {
+        super();
+        this.shape = [
+                        [[0,0],[1,0],[1,1],[2,1]],
+                        [[0,1],[0,2],[1,0],[1,1]],
+                        [[0,0],[1,0],[1,1],[2,1]],
+                        [[1,1],[1,2],[2,0],[2,1]]
+        ];
+        this.color = "#d70f37";
+    }
+}
+class Block5 extends Block {
+    constructor () {
+        super();
+        this.shape = [
+                        [[0,1],[1,1],[2,1],[2,0]],
+                        [[1,0],[1,1],[1,2],[2,2]],
+                        [[0,0],[0,1],[1,0],[2,0]],
+                        [[1,0],[2,0],[2,1],[2,2]]
+        ];
+        this.color = "#e35b02";
+    }
+}
+class Block6 extends Block {
+    constructor () {
+        super();
+        this.shape = [
+                        [[0,0],[0,1],[1,1],[2,1]],
+                        [[1,0],[1,1],[1,2],[2,0]],
+                        [[0,0],[1,0],[2,0],[2,1]],
+                        [[0,2],[1,0],[1,1],[1,2]]
+        ];
+        this.color = "#2141c6";
+    }
+}
+class Block7 extends Block {
+    constructor () {
+        super();
+        this.shape = [
+                        [[0,0],[0,1],[1,1],[1,0]],
+                        [[0,0],[0,1],[1,1],[1,0]],
+                        [[0,0],[0,1],[1,1],[1,0]],
+                        [[0,0],[0,1],[1,1],[1,0]]
+        ];
+        this.color = "#e39f02";
+    }
+}
 class Field {
     constructor (width, height) {
         this.width = width;
         this.height = height;
         this.field = create2DArray(width, height);
     }
-    color = "black";
+    color = "#808080";
 
-    deleteLine(i) {
-        console.log("work %d", i);
-        for(var k=1; k<this.width+1; k++){
-            for(var h=i; h>0; h--){
-                this.field[h][k] = this.field[h-1][k]; 
+    deleteLine(line) {
+        console.log("work %d", line);
+        for(var i=1; i<this.width+1; i++){
+            for(var j=line; j>0; j--){
+                this.field[j][i] = this.field[j-1][i]; 
             }
 
         }
     }
 
-    drawField() {
+    drawField(x, y) {
         ctx.beginPath();
-        ctx.rect(px,0,this.width*px, this.height*px);
+        ctx.rect(x*px,y*px,this.width*px, this.height*px);
         ctx.strokeStyle = this.color;
         ctx.stroke();
         ctx.closePath();
         for(var i=0; i<this.height; i++){
-            for(var j=1; j<this.width+1; j++){
-                if(this.field[i+3][j] == 1){
+            for(var j=0; j<this.width; j++){
+                if(this.field[i+2][j+1] == 1){
                     ctx.beginPath();
                     ctx.rect(j*px, i*px, px, px);
                     ctx.fillStyle = this.color;
@@ -129,24 +223,26 @@ class Field {
 }
 
 class Control {
-    constructor(width, height) {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
         this.fieldA = new Field(width, height);
         this.ran = [];
-        this.ran.push(Math.floor(Math.random()*6)+1);
-        this.ran.push(Math.floor(Math.random()*6)+1);
-        this.ran.push(Math.floor(Math.random()*6)+1);
-        this.ran.push(Math.floor(Math.random()*6)+1);
+        this.ran.push(Math.floor(Math.random()*7)+1);
+        this.ran.push(Math.floor(Math.random()*7)+1);
+        this.ran.push(Math.floor(Math.random()*7)+1);
+        this.ran.push(Math.floor(Math.random()*7)+1);
         this.currentBlock = randomBlock(this.ran.shift());
-        this.ran.push(Math.floor(Math.random()*6)+1);
+        this.ran.push(Math.floor(Math.random()*7)+1);
     }
 
     draw (){
-        this.fieldA.drawField();
-        this.currentBlock.drawBlock();
+        this.fieldA.drawField(this.x,this.y);
+        this.currentBlock.drawBlock(this.x,this.y);
     }
     createBlock () {
         this.currentBlock = randomBlock(this.ran.shift());
-        this.ran.push(Math.floor(Math.random()*6)+1);
+        this.ran.push(Math.floor(Math.random()*7)+1);
     }
 
     collision(){
@@ -181,7 +277,6 @@ class Control {
                 if(count == 2){
                     this.currentBlock.x  = pos.x;
                     this.currentBlock.y  = pos.y;
-                    this.currentBlock.rotation(direct*(-1));
                     count = 0;
                     break;
                 }
@@ -191,10 +286,10 @@ class Control {
                 count++;
             }
             while(this.collision()) {
+                console.log("work?");
                 if(count == 2){
                     this.currentBlock.x  = pos.x;
                     this.currentBlock.y  = pos.y;
-                    this.currentBlock.rotation(direct*(-1));
                     count = 0;
                     break;
                 }
@@ -239,18 +334,17 @@ class Control {
                 this.fieldA.field[filled[i][1]][filled[i][0]] = 1;
             }
             this.currentBlock.landing();
-            this.currentBlock.drawBlock();
             this.createBlock();
             this.cheakDelete();
-            this.checkGameOver();
+
         }
     }
     checkGameOver () {
-        var line = this.fieldA.field[2];
         for(var i = 1; i<11; i++){
-            if(line[i] === 1){
-                document.location.reload();
-                alert("GAME OVER");
+            if(this.fieldA.field[10][i] === 1){
+                console.log(gamePlaying);
+                this.draw();
+                gamePlayer(2);
                 
             }
         }
@@ -259,14 +353,14 @@ class Control {
         console.log("check");
         var check = 0;
         for(var i=0; i<this.fieldA.height; i++){
-            for(var j=1; j<this.fieldA.width+1; j++){
-                if(this.fieldA.field[i][j] === 1){
+            for(var j=0; j<this.fieldA.width; j++){
+                if(this.fieldA.field[i+2][j+1] === 1){
                     check++;
                     console.log(check);
                 }
             }
             if(check == 10){
-                this.fieldA.deleteLine(i);
+                this.fieldA.deleteLine(i+2);
             }
             check = 0;
         }
@@ -274,19 +368,19 @@ class Control {
     }
 }
 
-var game  = new Control(10, 20);
+var game;
 var control =0;
-
+var gamePlaying = undefined;
 function main() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    game.draw();
     game.control(control);
     game.land();
+    game.draw();
 
-
+    game.checkGameOver();
 
     control = 0;
-    requestAnimationFrame(main);
+    gamePlaying = requestAnimationFrame(main);
 }
 
 document.addEventListener("keydown", keydownHandler);
@@ -304,4 +398,19 @@ function keydownHandler(e) {
     else if(e.keyCode == 32)
         control = 5;
 }
-main();
+
+
+function gamePlayer (key) {
+    var btn = document.getElementById("start");
+    if(key == 1){
+        console.log("start");
+        game = new Control(0, 0, 10, 20);
+        main();
+        btn.setAttribute("disable", "disable");
+    }
+    else if(key == 2){
+        console.log("gamePlay2");
+        btn.disable = true;
+    }
+}
+
